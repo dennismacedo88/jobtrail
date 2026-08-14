@@ -1,0 +1,26 @@
+# Dependências
+node_modules/
+bin/
+obj/
+
+# Build
+dist/
+build/
+
+# Segredos e configs locais - NUNCA subir
+.env
+.env.local
+appsettings.Development.json
+appsettings.Local.json
+*.user
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor / SO
+.vs/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
