@@ -1,10 +1,17 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using JobTrail.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Adiciona os controllers (endpoints da API)
-builder.Services.AddControllers();
+// Configura o JSON para serializar enums como string (ex: "Entrevista"),
+// em vez de número (ex: 3) — mais legível para o frontend e para debug.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 // Documentação da API (OpenAPI nativo do .NET, apenas em desenvolvimento)
 builder.Services.AddOpenApi();
