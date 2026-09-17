@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 using JobTrail.Api.Data;
+using JobTrail.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +38,45 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Service que gera o JWT no login (registrado como Scoped: não guarda estado
+// entre requisições e depende de IConfiguration, também Scoped por padrão)
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+// Autenticação JWT: o token não vem do header Authorization (padrão da lib),
+// e sim de um cookie HttpOnly — por isso o evento OnMessageReceived abaixo
+// intercepta a requisição e lê o token manualmente do cookie.
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("Chave JWT (Jwt:Key) não configurada.");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.TryGetValue("jobtrail_token", out var token))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -45,6 +88,9 @@ app.UseHttpsRedirection();
 
 app.UseCors("FrontendPolicy");
 
+// Authentication antes de Authorization: precisa identificar o usuário
+// (ler e validar o JWT) antes de decidir se ele tem permissão de acesso.
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
