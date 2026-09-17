@@ -8,14 +8,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 24px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
-  margin-bottom: 16px;
 }
 
 .page-header h1 {
   font-size: 24px;
   margin: 0;
+}
+
+.page-header-marca {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.page-header-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.page-header-nav a {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.page-header-nav a[aria-current='page'] {
+  color: var(--text-h);
+  border-bottom-color: var(--accent);
 }
 
 .page-header-usuario {

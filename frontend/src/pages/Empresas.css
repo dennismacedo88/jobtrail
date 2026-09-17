@@ -1,0 +1,77 @@
+.empresas-page h2 {
+  margin: 0 0 16px;
+}
+
+.empresa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 560px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.empresa-form-linha {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.empresa-form-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.empresa-form-campo label {
+  font-size: 14px;
+}
+
+.empresa-form input,
+.empresa-form textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.empresa-form button {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.empresa-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.empresas-erro {
+  color: #d1242f;
+  font-size: 14px;
+}
+
+.empresas-tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.empresas-tabela th,
+.empresas-tabela td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
