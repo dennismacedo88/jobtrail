@@ -8,18 +8,22 @@ export default defineConfig({
     proxy: {
       // ATENÇÃO — configuração específica de DESENVOLVIMENTO, não usada em produção.
       //
-      // A API roda em HTTPS (https://localhost:7220) e o cookie de sessão usa
-      // Secure + SameSite=Strict. Se o front chamasse a API diretamente, o
-      // navegador consideraria http://localhost:5173 e https://localhost:7220
-      // "sites" diferentes (scheme diferente = "schemeful same-site"), e o
-      // cookie HttpOnly nunca seria enviado de volta nas chamadas seguintes ao
-      // login — a sessão pareceria "não persistir", sem erro claro.
+      // O cookie de sessão usa Secure + SameSite=Strict. Se o front chamasse a
+      // API diretamente (cross-origin), o navegador poderia tratar as duas
+      // origens como "sites" diferentes dependendo do scheme de cada uma
+      // (scheme diferente = "schemeful same-site"), e o cookie nunca seria
+      // enviado de volta nas chamadas seguintes ao login — a sessão pareceria
+      // "não persistir", sem erro claro.
       //
       // Com o proxy, o navegador só enxerga requisições para
-      // http://localhost:5173/api/..., ou seja, mesma origem da própria página.
-      // O redirecionamento para o backend acontece no servidor do Vite, fora
-      // do navegador, então o cookie chega e sai sem nenhuma restrição de
-      // CORS/SameSite pela frente.
+      // http://localhost:5173/api/..., ou seja, mesma origem da própria
+      // página. O hop até o backend acontece no servidor do Vite, fora do
+      // navegador — então o scheme real do backend (http ou https) é
+      // irrelevante para o navegador, e o cookie chega/sai sem nenhuma
+      // restrição de CORS/SameSite pela frente. Isso também é o motivo de
+      // apontar para a porta HTTP (5274): tanto o launchSettings.json profile
+      // "http" quanto o "https" expõem essa porta, então o proxy funciona
+      // não importa qual dos dois você rode.
       //
       // TODO (Fase 4 — deploy): em produção não haverá "servidor do Vite".
       // Vamos precisar decidir entre (a) servir front e back sob o mesmo
@@ -28,9 +32,8 @@ export default defineConfig({
       // SameSite=None + CORS explícito por origem — decisão a tomar na Fase 4,
       // não antes.
       '/api': {
-        target: 'https://localhost:7220',
+        target: 'http://localhost:5274',
         changeOrigin: true,
-        secure: false, // aceita o certificado de desenvolvimento autoassinado do ASP.NET Core
       },
     },
   },
