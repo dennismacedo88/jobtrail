@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobTrail.Api.Data;
@@ -8,6 +10,7 @@ namespace JobTrail.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CandidaturasController : ControllerBase
     {
         private readonly JobTrailDbContext _context;
@@ -21,8 +24,11 @@ namespace JobTrail.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CandidaturaResponseDto>>> GetCandidaturas()
         {
+            var usuarioId = GetUsuarioId();
+
             var candidaturas = await _context.Candidaturas
                 .Include(c => c.Empresa)
+                .Where(c => c.Empresa!.UsuarioId == usuarioId)
                 .OrderByDescending(c => c.DataAplicacao)
                 .Select(c => MapToResponseDto(c))
                 .ToListAsync();
@@ -34,9 +40,11 @@ namespace JobTrail.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CandidaturaResponseDto>> GetCandidatura(int id)
         {
+            var usuarioId = GetUsuarioId();
+
             var candidatura = await _context.Candidaturas
                 .Include(c => c.Empresa)
-                .Where(c => c.Id == id)
+                .Where(c => c.Id == id && c.Empresa!.UsuarioId == usuarioId)
                 .Select(c => MapToResponseDto(c))
                 .FirstOrDefaultAsync();
 
@@ -52,7 +60,9 @@ namespace JobTrail.Api.Controllers
         [HttpGet("{id}/historico")]
         public async Task<ActionResult<IEnumerable<HistoricoStatusResponseDto>>> GetHistorico(int id)
         {
-            var candidaturaExiste = await _context.Candidaturas.AnyAsync(c => c.Id == id);
+            var usuarioId = GetUsuarioId();
+            var candidaturaExiste = await _context.Candidaturas
+                .AnyAsync(c => c.Id == id && c.Empresa!.UsuarioId == usuarioId);
 
             if (!candidaturaExiste)
             {
@@ -78,9 +88,15 @@ namespace JobTrail.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<CandidaturaResponseDto>> CreateCandidatura(CandidaturaRequestDto dto)
         {
-            var empresaExiste = await _context.Empresas.AnyAsync(e => e.Id == dto.EmpresaId);
+            var usuarioId = GetUsuarioId();
 
-            if (!empresaExiste)
+            // Garante que a empresa informada existe E pertence ao usuário logado —
+            // sem essa segunda checagem, seria possível criar uma candidatura
+            // vinculada à empresa de outra pessoa apenas informando o Id dela.
+            var empresaPertenceAoUsuario = await _context.Empresas
+                .AnyAsync(e => e.Id == dto.EmpresaId && e.UsuarioId == usuarioId);
+
+            if (!empresaPertenceAoUsuario)
             {
                 return BadRequest(new { message = "Empresa informada não existe." });
             }
@@ -112,7 +128,10 @@ namespace JobTrail.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCandidatura(int id, CandidaturaUpdateDto dto)
         {
-            var candidatura = await _context.Candidaturas.FindAsync(id);
+            var usuarioId = GetUsuarioId();
+            var candidatura = await _context.Candidaturas
+                .Include(c => c.Empresa)
+                .FirstOrDefaultAsync(c => c.Id == id && c.Empresa!.UsuarioId == usuarioId);
 
             if (candidatura == null)
             {
@@ -135,9 +154,10 @@ namespace JobTrail.Api.Controllers
         [HttpPatch("{id}/status")]
         public async Task<ActionResult<CandidaturaResponseDto>> MudarStatus(int id, MudarStatusDto dto)
         {
+            var usuarioId = GetUsuarioId();
             var candidatura = await _context.Candidaturas
                 .Include(c => c.Empresa)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id && c.Empresa!.UsuarioId == usuarioId);
 
             if (candidatura == null)
             {
@@ -168,7 +188,10 @@ namespace JobTrail.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCandidatura(int id)
         {
-            var candidatura = await _context.Candidaturas.FindAsync(id);
+            var usuarioId = GetUsuarioId();
+            var candidatura = await _context.Candidaturas
+                .Include(c => c.Empresa)
+                .FirstOrDefaultAsync(c => c.Id == id && c.Empresa!.UsuarioId == usuarioId);
 
             if (candidatura == null)
             {
@@ -179,6 +202,15 @@ namespace JobTrail.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // Lê o Id do usuário autenticado a partir da claim gravada no JWT
+        // (ver TokenService.GerarToken). Como o Controller é [Authorize],
+        // a claim sempre existe quando este método é chamado.
+        private int GetUsuarioId()
+        {
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            return int.Parse(claim);
         }
 
         // Método auxiliar privado: centraliza a conversão de Candidatura para DTO,
