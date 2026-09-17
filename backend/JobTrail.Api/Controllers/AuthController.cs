@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobTrail.Api.Data;
@@ -95,6 +97,37 @@ namespace JobTrail.Api.Controllers
         {
             Response.Cookies.Delete(CookieToken);
             return NoContent();
+        }
+
+        // GET: api/auth/me
+        // O frontend nunca consegue ler o cookie HttpOnly diretamente (é por
+        // isso que ele é seguro contra XSS). Esse endpoint existe justamente
+        // para o app React perguntar "quem está logado?" ao carregar/recarregar
+        // a página, em vez de depender de algo acessível via JavaScript.
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<UsuarioResponseDto>> Me()
+        {
+            var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var usuario = await _context.Usuarios.FindAsync(usuarioId);
+
+            // Cenário raro (ex: usuário excluído após o token ser emitido),
+            // mas o token sozinho não deve bastar para confirmar a sessão.
+            if (usuario == null)
+            {
+                return Unauthorized(new { message = "Sessão inválida." });
+            }
+
+            var responseDto = new UsuarioResponseDto
+            {
+                Id = usuario.Id,
+                Nome = usuario.Nome,
+                Email = usuario.Email,
+                CriadoEm = usuario.CriadoEm
+            };
+
+            return Ok(responseDto);
         }
 
         // Centraliza a configuração do cookie do token (DRY, mesmo padrão de
