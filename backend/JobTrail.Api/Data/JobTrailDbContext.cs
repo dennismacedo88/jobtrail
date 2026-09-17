@@ -10,6 +10,7 @@ namespace JobTrail.Api.Data
         {
         }
 
+        public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
         public DbSet<Candidatura> Candidaturas { get; set; }
         public DbSet<HistoricoStatus> HistoricosStatus { get; set; }
@@ -17,6 +18,23 @@ namespace JobTrail.Api.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Usuario>(entity =>
+            {
+                // Índice único: garante, também no banco, que não existam dois
+                // usuários com o mesmo e-mail (não basta validar só na aplicação).
+                entity.HasIndex(u => u.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<Empresa>(entity =>
+            {
+                entity.HasIndex(e => e.UsuarioId);
+
+                entity.HasOne(e => e.Usuario)
+                      .WithMany(u => u.Empresas)
+                      .HasForeignKey(e => e.UsuarioId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<Candidatura>(entity =>
             {

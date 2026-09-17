@@ -18,6 +18,10 @@ namespace JobTrail.Api.Models
 
         public DateTime CriadoEm { get; set; } = DateTime.UtcNow;
 
+        // Relacionamento: cada empresa pertence ao usuário que a cadastrou
+        public int UsuarioId { get; set; }
+        public Usuario? Usuario { get; set; }
+
         // Uma empresa pode ter várias candidaturas associadas
         public ICollection<Candidatura> Candidaturas { get; set; } = new List<Candidatura>();
     }
