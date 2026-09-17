@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JobTrail.Api.Data;
@@ -8,6 +10,7 @@ namespace JobTrail.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class EmpresasController : ControllerBase
     {
         private readonly JobTrailDbContext _context;
@@ -21,7 +24,10 @@ namespace JobTrail.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EmpresaResponseDto>>> GetEmpresas()
         {
+            var usuarioId = GetUsuarioId();
+
             var empresas = await _context.Empresas
+                .Where(e => e.UsuarioId == usuarioId)
                 .OrderBy(e => e.Nome)
                 .Select(e => new EmpresaResponseDto
                 {
@@ -41,8 +47,10 @@ namespace JobTrail.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<EmpresaResponseDto>> GetEmpresa(int id)
         {
+            var usuarioId = GetUsuarioId();
+
             var empresa = await _context.Empresas
-                .Where(e => e.Id == id)
+                .Where(e => e.Id == id && e.UsuarioId == usuarioId)
                 .Select(e => new EmpresaResponseDto
                 {
                     Id = e.Id,
@@ -71,7 +79,8 @@ namespace JobTrail.Api.Controllers
                 Nome = dto.Nome.Trim(),
                 Site = dto.Site?.Trim(),
                 Notas = dto.Notas?.Trim(),
-                CriadoEm = DateTime.UtcNow
+                CriadoEm = DateTime.UtcNow,
+                UsuarioId = GetUsuarioId()
             };
 
             _context.Empresas.Add(empresa);
@@ -94,7 +103,9 @@ namespace JobTrail.Api.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateEmpresa(int id, EmpresaRequestDto dto)
         {
-            var empresa = await _context.Empresas.FindAsync(id);
+            var usuarioId = GetUsuarioId();
+            var empresa = await _context.Empresas
+                .FirstOrDefaultAsync(e => e.Id == id && e.UsuarioId == usuarioId);
 
             if (empresa == null)
             {
@@ -114,7 +125,9 @@ namespace JobTrail.Api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmpresa(int id)
         {
-            var empresa = await _context.Empresas.FindAsync(id);
+            var usuarioId = GetUsuarioId();
+            var empresa = await _context.Empresas
+                .FirstOrDefaultAsync(e => e.Id == id && e.UsuarioId == usuarioId);
 
             if (empresa == null)
             {
@@ -125,6 +138,15 @@ namespace JobTrail.Api.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // Lê o Id do usuário autenticado a partir da claim gravada no JWT
+        // (ver TokenService.GerarToken). Como o Controller é [Authorize],
+        // a claim sempre existe quando este método é chamado.
+        private int GetUsuarioId()
+        {
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            return int.Parse(claim);
         }
     }
 }
