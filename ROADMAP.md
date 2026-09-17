@@ -25,10 +25,11 @@
 - [x] Infraestrutura de autenticação: `AuthContext`/`useAuth`, `RotaProtegida`, `httpClient` com `credentials: 'include'`
 - [x] Proxy do Vite (`/api` → backend) para dev — necessário para o cookie `Secure + SameSite=Strict` funcionar entre `http://localhost:5173` e `https://localhost:7220` (documentado em `vite.config.ts`)
 - [x] Fluxo de login/cadastro/logout validado ponta a ponta em navegador (Playwright headless), sem erros de console
+- [x] Layout compartilhado (header + navegação) entre páginas protegidas
+- [x] Cadastro e listagem de Empresas — validado em navegador: lista vazia, criação, ordenação alfabética, bloqueio de submit sem nome, persistência após reload
 - [ ] Listagem de Candidaturas (com filtro por status)
 - [ ] Formulário de criar/editar Candidatura
 - [ ] Tela de detalhes da Candidatura com histórico de status
-- [ ] Cadastro e listagem de Empresas
 - [ ] Componente de mudança de status (dropdown, ou Kanban se houver tempo)
 - [ ] Responsividade básica
 
