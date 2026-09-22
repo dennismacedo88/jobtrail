@@ -86,6 +86,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Serve o build do React (gerado em wwwroot pelo `npm run build` do frontend,
+// ver vite.config.ts) sob o mesmo domínio da API. Essa foi a decisão tomada
+// para o cookie de sessão em produção: front e back em "mesma origem" evita
+// ter que trocar SameSite=Strict por SameSite=None (que fica sujeito a
+// bloqueio de cookie de terceiros em Safari/Firefox). Por isso a policy de
+// CORS abaixo hoje só importa em desenvolvimento, via proxy do Vite — em
+// produção não há requisição cross-origin nenhuma para o CORS regular.
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseCors("FrontendPolicy");
 
 // Authentication antes de Authorization: precisa identificar o usuário
@@ -94,5 +104,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Fallback de SPA: qualquer rota que não bata em um Controller nem em um
+// arquivo estático cai no index.html, para o React Router assumir o roteamento
+// client-side (ex: dar F5 em /candidaturas/5). O regex exclui "api/..." do
+// fallback — sem isso, uma rota de API inexistente devolveria o index.html
+// com 200 em vez de um 404 de verdade.
+app.MapFallbackToFile("{*path:regex(^(?!api).*$)}", "index.html");
 
 app.Run();

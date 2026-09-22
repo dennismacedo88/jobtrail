@@ -7,6 +7,10 @@ obj/
 dist/
 build/
 
+# Build do frontend copiado para dentro do backend (ver vite.config.ts) —
+# gerado a cada `npm run build`, nunca deve ser versionado
+backend/JobTrail.Api/wwwroot/
+
 # Segredos e configs locais - NUNCA subir
 .env
 .env.local
