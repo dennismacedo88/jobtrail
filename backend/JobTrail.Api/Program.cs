@@ -24,7 +24,7 @@ builder.Services.AddOpenApi();
 // A connection string vem do User Secrets (nunca do código-fonte)
 var connectionString = builder.Configuration.GetConnectionString("JobTrailDb");
 builder.Services.AddDbContext<JobTrailDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // CORS estrito: por enquanto, apenas o frontend React local pode chamar essa API
 builder.Services.AddCors(options =>
