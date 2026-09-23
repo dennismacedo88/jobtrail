@@ -1,5 +1,7 @@
 # JobTrail
 
+### 🔗 [Acesse o projeto ao vivo](https://jobtrail-49uy.onrender.com)
+
 Sistema para rastrear candidaturas a vagas de emprego — cadastre as empresas para as quais você aplicou, acompanhe o status de cada candidatura (Aplicado, Triagem, Teste Técnico, Entrevista, Oferta, Rejeitado, Desistiu) e veja o histórico completo de mudanças.
 
 ## Sobre o projeto
