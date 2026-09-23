@@ -91,6 +91,8 @@ dotnet user-secrets set "Jwt:Audience" "JobTrail.Frontend"
 
 ### 4. Aplicar as migrations
 
+O backend aplica as migrations pendentes automaticamente ao iniciar (necessário porque o ambiente de deploy não tem acesso a shell no container). Então esse passo já acontece sozinho no próximo passo — mas se preferir aplicar manualmente antes de rodar:
+
 ```bash
 dotnet ef database update
 ```

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -79,10 +80,38 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
+// Aplica migrations pendentes automaticamente ao iniciar. Necessário porque o
+// deploy (Render, free tier) não dá acesso a shell no container — não tem
+// como rodar `dotnet ef database update` manualmente depois de publicar. É
+// seguro rodar sempre (inclusive em dev): o EF Core sabe quais migrations já
+// foram aplicadas e não faz nada se não houver pendência.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<JobTrailDbContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// O load balancer do Render (e de PaaS equivalentes) termina o HTTPS e repassa
+// pro container em HTTP puro, com o esquema original só no header
+// X-Forwarded-Proto. Sem isso, o app "acha" que toda requisição chegou em
+// HTTP. Hoje nada aqui depende disso pra funcionar (o cookie usa
+// Secure=true fixo, não condicional a Request.IsHttps), mas é a prática
+// padrão pra rodar atrás de qualquer proxy reverso — e evita dor de cabeça
+// se algo passar a depender do esquema no futuro (geração de URL absoluta,
+// antiforgery, etc.). KnownNetworks/KnownProxies são limpos porque o IP do
+// load balancer do Render não é fixo/previsível.
+var forwardedHeadersOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedHeadersOptions.KnownIPNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedHeadersOptions);
 
 app.UseHttpsRedirection();
 
