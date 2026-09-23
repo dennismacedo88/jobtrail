@@ -136,9 +136,13 @@ app.MapControllers();
 
 // Fallback de SPA: qualquer rota que não bata em um Controller nem em um
 // arquivo estático cai no index.html, para o React Router assumir o roteamento
-// client-side (ex: dar F5 em /candidaturas/5). O regex exclui "api/..." do
-// fallback — sem isso, uma rota de API inexistente devolveria o index.html
-// com 200 em vez de um 404 de verdade.
-app.MapFallbackToFile("{*path:regex(^(?!api).*$)}", "index.html");
+// client-side (ex: dar F5 em /candidaturas/5). O regex exclui duas coisas do
+// fallback: "api/..." (senão uma rota de API inexistente devolveria o
+// index.html com 200 em vez de um 404 de verdade) e qualquer caminho que
+// termine em ".algumacoisa" (um asset estático, tipo /assets/x.js ou
+// favicon.svg) — sem essa segunda exclusão, um asset que por algum motivo não
+// seja encontrado pelo UseStaticFiles cairia aqui silenciosamente e voltaria
+// como HTML com status 200, em vez de um 404 que denunciaria o problema.
+app.MapFallbackToFile("{*path:regex(^(?!api)(?!.*\\.\\w+$).*$)}", "index.html");
 
 app.Run();

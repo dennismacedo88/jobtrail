@@ -16,11 +16,17 @@ RUN npm --prefix frontend run build
 # ---- 2) build e publish do backend ----
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
-COPY backend/JobTrail.Api/JobTrail.Api.csproj backend/JobTrail.Api/
-RUN dotnet restore backend/JobTrail.Api/JobTrail.Api.csproj
+# wwwroot precisa estar presente ANTES do restore/publish. O SDK descobre os
+# "static web assets" (arquivos de wwwroot) durante o restore, e cacheia essa
+# descoberta — copiar wwwroot só depois (numa camada separada, com um restore
+# antecipado por cache) faz o publish achar que wwwroot está vazio: os
+# arquivos existem fisicamente na imagem, mas o UseStaticFiles não sabe que
+# existem, e toda requisição de asset cai no fallback do SPA (index.html no
+# lugar do .js — foi exatamente o bug visto em produção). Por isso aqui é tudo
+# copiado numa avaliação só, sem restore em camada separada.
 COPY backend/JobTrail.Api/ backend/JobTrail.Api/
 COPY --from=frontend-build /src/backend/JobTrail.Api/wwwroot backend/JobTrail.Api/wwwroot
-RUN dotnet publish backend/JobTrail.Api/JobTrail.Api.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish backend/JobTrail.Api/JobTrail.Api.csproj -c Release -o /app/publish
 
 # ---- 3) imagem final, só com o runtime ----
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
