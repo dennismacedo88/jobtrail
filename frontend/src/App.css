@@ -4,10 +4,18 @@
   text-align: left;
 }
 
+@media (max-width: 480px) {
+  .page {
+    padding: 16px;
+  }
+}
+
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 8px;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
 }
@@ -20,11 +28,13 @@
 .page-header-marca {
   display: flex;
   align-items: center;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
 }
 
 .page-header-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
 }
 

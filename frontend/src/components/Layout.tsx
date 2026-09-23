@@ -14,7 +14,7 @@ export function Layout() {
           <h1>JobTrail</h1>
           <nav className="page-header-nav">
             <NavLink to="/" end>
-              Início
+              Candidaturas
             </NavLink>
             <NavLink to="/empresas">Empresas</NavLink>
           </nav>

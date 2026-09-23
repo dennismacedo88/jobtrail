@@ -119,34 +119,36 @@ export function EmpresasPage() {
       )}
 
       {!carregando && empresas.length > 0 && (
-        <table className="empresas-tabela">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Site</th>
-              <th>Candidaturas</th>
-              <th>Cadastrada em</th>
-            </tr>
-          </thead>
-          <tbody>
-            {empresas.map((empresa) => (
-              <tr key={empresa.id}>
-                <td>{empresa.nome}</td>
-                <td>
-                  {empresa.site ? (
-                    <a href={empresa.site} target="_blank" rel="noreferrer">
-                      {empresa.site}
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-                <td>{empresa.totalCandidaturas}</td>
-                <td>{new Date(empresa.criadoEm).toLocaleDateString('pt-BR')}</td>
+        <div className="tabela-scroll">
+          <table className="empresas-tabela">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Site</th>
+                <th>Candidaturas</th>
+                <th>Cadastrada em</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {empresas.map((empresa) => (
+                <tr key={empresa.id}>
+                  <td>{empresa.nome}</td>
+                  <td>
+                    {empresa.site ? (
+                      <a href={empresa.site} target="_blank" rel="noreferrer">
+                        {empresa.site}
+                      </a>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                  <td>{empresa.totalCandidaturas}</td>
+                  <td>{new Date(empresa.criadoEm).toLocaleDateString('pt-BR')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

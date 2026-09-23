@@ -109,3 +109,9 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Evita que tabelas largas empurrem a página inteira para os lados em
+   telas estreitas — o scroll fica contido no próprio bloco da tabela. */
+.tabela-scroll {
+  overflow-x: auto;
+}

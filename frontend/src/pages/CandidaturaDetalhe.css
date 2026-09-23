@@ -1,0 +1,79 @@
+.candidatura-detalhe-voltar {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.candidatura-detalhe-page h2 {
+  margin: 0 0 4px;
+}
+
+.candidatura-detalhe-empresa {
+  margin: 0 0 16px;
+  color: var(--text);
+}
+
+.candidatura-detalhe-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 480px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.candidatura-detalhe-info > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.candidatura-detalhe-label {
+  font-size: 12px;
+  color: var(--text);
+}
+
+.candidatura-detalhe-mudar-status {
+  max-width: 480px;
+  margin-bottom: 32px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.candidatura-detalhe-mudar-status h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.candidatura-detalhe-mudar-status-controles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.candidatura-detalhe-mudar-status-controles select {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--text-h);
+  background: var(--bg);
+}
+
+.candidatura-detalhe-mudar-status-controles button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.candidatura-detalhe-mudar-status-controles button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
